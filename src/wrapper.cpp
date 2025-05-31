@@ -181,6 +181,11 @@ namespace emscripten {
         return ValBinding::toWireType(val::array(vec));
       }
 
+      template <typename Policy>
+      static WireType toWireType(const std::vector<T, Allocator>& vec, Policy policy) {
+        return ValBinding::toWireType(val::array(vec), policy);
+      }
+
       static std::vector<T, Allocator> fromWireType(WireType value) {
         return vecFromJSArray<T>(ValBinding::fromWireType(value));
       }
