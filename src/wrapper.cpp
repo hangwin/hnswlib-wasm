@@ -170,31 +170,6 @@ namespace emscripten {
 
   namespace internal {
 
-    template <typename T, typename Allocator>
-
-    /// @brief This is a specialization of the BindingType struct for the std::vector class template with template parameters T and Allocator. It provides a WireType type alias and two static member functions toWireType and fromWireType that convert a std::vector<T, Allocator> object to and from its corresponding WireType representation.
-    struct BindingType<std::vector<T, Allocator>> {
-      using ValBinding = BindingType<val>;
-      using WireType = ValBinding::WireType;
-
-      static WireType toWireType(const std::vector<T, Allocator>& vec) {
-        return ValBinding::toWireType(val::array(vec));
-      }
-
-      static std::vector<T, Allocator> fromWireType(WireType value) {
-        return vecFromJSArray<T>(ValBinding::fromWireType(value));
-      }
-    };
-
-    template <typename T>
-    struct TypeID<T,
-      typename std::enable_if_t<std::is_same<
-      typename Canonicalized<T>::type,
-      std::vector<typename Canonicalized<T>::type::value_type,
-      typename Canonicalized<T>::type::allocator_type>>::value>> {
-      static constexpr TYPEID get() { return TypeID<val>::get(); }
-    };
-
     /// @brief This function normalizes the point in place, but cheats and uses the same input parameter vector.  It is set as const due to bindings
     /// @param vec 
     void normalizePoints(const std::vector<float>& vec) {
@@ -1032,6 +1007,13 @@ namespace emscripten {
 
   EMSCRIPTEN_BINDINGS(hnswlib) {
     using namespace emscripten;
+
+    // 注册常用 vector 类型，确保 JS/C++ 互通
+    register_vector<float>("VectorFloat");
+    register_vector<std::vector<float>>("VectorVectorFloat");
+    register_vector<uint32_t>("VectorUint32");
+    // 注意：只注册 VectorFloat、VectorVectorFloat、VectorUint32，且类型名与 JS 侧完全一致，避免重复注册和类型名冲突
+
 
     function("normalizePoint", &normalizePointsPure);
 
